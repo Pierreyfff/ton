@@ -11,7 +11,7 @@ export default function Login() {
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  
+
   const { login } = useAuth();
   const router = useRouter();
 
@@ -30,8 +30,11 @@ export default function Login() {
     try {
       await login(formData.correo, formData.contrasena);
       router.push('/');
-    } catch (error: any) {
-      setError(error.response?.data?.message || 'Error al iniciar sesión');
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error
+        ? error.message
+        : (error as { response?: { data?: { message?: string } } })?.response?.data?.message || 'Error al iniciar sesión';
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -82,8 +85,8 @@ export default function Login() {
             />
           </div>
 
-          <button 
-            type="submit" 
+          <button
+            type="submit"
             className="btn btn-primary"
             style={{ width: '100%' }}
             disabled={loading}
@@ -95,14 +98,14 @@ export default function Login() {
         <div className={styles.footer}>
           <p>
             ¿No tienes una cuenta?{' '}
-            <button 
+            <button
               onClick={() => router.push('/register')}
               className={styles.link}
             >
               Regístrate aquí
             </button>
           </p>
-          <button 
+          <button
             onClick={() => router.push('/')}
             className={styles.link}
           >
