@@ -1,0 +1,202 @@
+.container {
+  min-height: 100vh;
+  background-color: var(--gray-50);
+  padding: 2rem 0;
+}
+
+.loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 50vh;
+  gap: 1rem;
+}
+
+.header {
+  text-align: center;
+  margin-bottom: 3rem;
+}
+
+.header h1 {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: var(--gray-800);
+  margin-bottom: 0.5rem;
+}
+
+.header p {
+  color: var(--gray-600);
+  font-size: 1.125rem;
+}
+
+.emptyState {
+  text-align: center;
+  padding: 4rem 2rem;
+  background: white;
+  border-radius: 1rem;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+}
+
+.emptyState h2 {
+  font-size: 1.5rem;
+  color: var(--gray-700);
+  margin-bottom: 1rem;
+}
+
+.emptyState p {
+  color: var(--gray-600);
+  margin-bottom: 2rem;
+}
+
+.reservasList {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.reservaCard {
+  transition: transform 0.2s ease-in-out;
+}
+
+.reservaCard:hover {
+  transform: translateY(-2px);
+}
+
+.reservaHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--gray-200);
+}
+
+.reservaHeader h3 {
+  color: var(--gray-800);
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.badge {
+  padding: 0.25rem 0.75rem;
+  border-radius: 1rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.reservado {
+  background-color: #fef3c7;
+  color: #92400e;
+}
+
+.confirmado {
+  background-color: #dcfce7;
+  color: #166534;
+}
+
+.cancelado {
+  background-color: #fecaca;
+  color: #991b1b;
+}
+
+.completado {
+  background-color: #dbeafe;
+  color: #1e40af;
+}
+
+.reservaDetails {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.detailGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.detailGroup strong {
+  color: var(--gray-700);
+  font-size: 0.875rem;
+}
+
+.pasajesInfo {
+  background-color: var(--gray-50);
+  padding: 1rem;
+  border-radius: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.pasajesInfo h4 {
+  margin-bottom: 0.75rem;
+  color: var(--gray-700);
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.pasajeItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid var(--gray-200);
+  font-size: 0.875rem;
+}
+
+.pasajeItem:last-child {
+  border-bottom: none;
+}
+
+.notasSection {
+  background-color: #fef3c7;
+  padding: 1rem;
+  border-radius: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.notasSection strong {
+  color: var(--gray-700);
+  font-size: 0.875rem;
+}
+
+.notasSection p {
+  margin-top: 0.5rem;
+  color: var(--gray-600);
+  font-style: italic;
+}
+
+.reservaActions {
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-end;
+}
+
+@media (max-width: 768px) {
+  .header h1 {
+    font-size: 2rem;
+  }
+  
+  .reservaHeader {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+  
+  .reservaDetails {
+    grid-template-columns: 1fr;
+  }
+  
+  .reservaActions {
+    flex-direction: column;
+  }
+  
+  .pasajeItem {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.25rem;
+  }
+}

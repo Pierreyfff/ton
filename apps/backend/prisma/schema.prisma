@@ -1,0 +1,490 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Sede {
+  id_sede    Int     @id @default(autoincrement())
+  nombre     String  @db.VarChar(100)
+  direccion  String  @db.VarChar(255)
+  telefono   String? @db.VarChar(20)
+  correo     String? @db.VarChar(100)
+  distrito   String  @db.VarChar(100)
+  provincia  String? @db.VarChar(100)
+  pais       String  @db.VarChar(100)
+  image_url  String? @db.VarChar(255)
+  eliminado  Boolean @default(false)
+
+  // Relations
+  usuarios          Usuario[]
+  embarcaciones     Embarcacion[]
+  tipos_tour        TipoTour[]
+  horarios_tour     HorarioTour[]
+  horarios_chofer   HorarioChofer[]
+  tours_programados TourProgramado[]
+  metodos_pago      MetodoPago[]
+  canales_venta     CanalVenta[]
+  tipos_pasaje      TipoPasaje[]
+  paquetes_pasajes  PaquetePasajes[]
+  reservas          Reserva[]
+  pagos             Pago[]
+
+  @@index([nombre])
+  @@index([distrito])
+  @@index([eliminado])
+  @@map("sede")
+}
+
+model Idioma {
+  id_idioma Int     @id @default(autoincrement())
+  nombre    String  @unique @db.VarChar(50)
+  eliminado Boolean @default(false)
+
+  // Relations
+  usuario_idiomas    UsuarioIdioma[]
+  tipo_tour_idiomas  TipoTourIdioma[]
+
+  @@index([nombre])
+  @@map("idioma")
+}
+
+model Usuario {
+  id_usuario         Int       @id @default(autoincrement())
+  id_sede            Int?
+  nombres            String    @db.VarChar(100)
+  apellidos          String    @db.VarChar(100)
+  correo             String?   @unique @db.VarChar(100)
+  telefono           String?   @db.VarChar(20)
+  direccion          String?   @db.VarChar(255)
+  fecha_nacimiento   DateTime? @db.Date
+  rol                String    @db.VarChar(20)
+  nacionalidad       String?   @db.VarChar(50)
+  tipo_de_documento  String    @db.VarChar(50)
+  numero_documento   String    @db.VarChar(20)
+  fecha_registro     DateTime  @default(now())
+  contrasena         String?   @db.VarChar(255)
+  eliminado          Boolean   @default(false)
+
+  // Relations
+  sede               Sede?              @relation(fields: [id_sede], references: [id_sede], onUpdate: Cascade, onDelete: Restrict)
+  usuario_idiomas    UsuarioIdioma[]
+  horarios_chofer    HorarioChofer[]
+  tours_programados  TourProgramado[]
+  reservas_vendedor  Reserva[]
+
+  @@unique([numero_documento])
+  @@index([id_sede])
+  @@index([rol])
+  @@index([nombres, apellidos])
+  @@index([tipo_de_documento, numero_documento])
+  @@index([eliminado])
+  @@map("usuario")
+}
+
+model UsuarioIdioma {
+  id_usuario_idioma Int     @id @default(autoincrement())
+  id_usuario        Int
+  id_idioma         Int
+  nivel             String? @db.VarChar(20)
+  eliminado         Boolean @default(false)
+
+  // Relations
+  usuario Usuario @relation(fields: [id_usuario], references: [id_usuario], onUpdate: Cascade, onDelete: Cascade)
+  idioma  Idioma  @relation(fields: [id_idioma], references: [id_idioma], onUpdate: Cascade, onDelete: Restrict)
+
+  @@unique([id_usuario, id_idioma])
+  @@index([id_usuario])
+  @@index([id_idioma])
+  @@index([eliminado])
+  @@map("usuario_idioma")
+}
+
+model Embarcacion {
+  id_embarcacion Int     @id @default(autoincrement())
+  id_sede        Int
+  nombre         String  @db.VarChar(100)
+  capacidad      Int
+  descripcion    String? @db.VarChar(255)
+  eliminado      Boolean @default(false)
+  estado         String  @default("DISPONIBLE") @db.VarChar(20)
+
+  // Relations
+  sede              Sede             @relation(fields: [id_sede], references: [id_sede], onUpdate: Cascade, onDelete: Restrict)
+  tours_programados TourProgramado[]
+
+  @@index([id_sede])
+  @@index([estado])
+  @@index([eliminado])
+  @@map("embarcacion")
+}
+
+model TipoTour {
+  id_tipo_tour      Int     @id @default(autoincrement())
+  id_sede           Int
+  nombre            String  @db.VarChar(100)
+  descripcion       String? @db.VarChar(255)
+  duracion_minutos  Int
+  cantidad_pasajeros Int
+  url_imagen        String? @db.VarChar(255)
+  eliminado         Boolean @default(false)
+
+  // Relations
+  sede                 Sede                @relation(fields: [id_sede], references: [id_sede], onUpdate: Cascade, onDelete: Restrict)
+  tipo_tour_idiomas    TipoTourIdioma[]
+  tipo_tour_galerias   TipoTourGaleria[]
+  horarios_tour        HorarioTour[]
+  tours_programados    TourProgramado[]
+  tipos_pasaje         TipoPasaje[]
+  paquetes_pasajes     PaquetePasajes[]
+
+  @@index([id_sede])
+  @@index([eliminado])
+  @@map("tipo_tour")
+}
+
+model TipoTourIdioma {
+  id_tipo_tour_idioma  Int     @id @default(autoincrement())
+  id_tipo_tour         Int
+  id_idioma            Int
+  nombre_traducido     String? @db.VarChar(100)
+  descripcion_traducida String? @db.VarChar(255)
+  eliminado            Boolean @default(false)
+
+  // Relations
+  tipo_tour TipoTour @relation(fields: [id_tipo_tour], references: [id_tipo_tour], onUpdate: Cascade, onDelete: Cascade)
+  idioma    Idioma   @relation(fields: [id_idioma], references: [id_idioma], onUpdate: Cascade, onDelete: Restrict)
+
+  @@unique([id_tipo_tour, id_idioma])
+  @@index([id_tipo_tour])
+  @@index([id_idioma])
+  @@index([eliminado])
+  @@map("tipo_tour_idioma")
+}
+
+model TipoTourGaleria {
+  id_galeria   Int     @id @default(autoincrement())
+  id_tipo_tour Int
+  imagen_url   String  @db.VarChar(255)
+  descripcion  String? @db.VarChar(255)
+  eliminado    Boolean @default(false)
+
+  // Relations
+  tipo_tour TipoTour @relation(fields: [id_tipo_tour], references: [id_tipo_tour], onUpdate: Cascade, onDelete: Cascade)
+
+  @@index([id_tipo_tour])
+  @@index([eliminado])
+  @@map("tipo_tour_galeria")
+}
+
+model HorarioTour {
+  id_horario             Int     @id @default(autoincrement())
+  id_tipo_tour           Int
+  id_sede                Int
+  hora_inicio            DateTime  @db.Time
+  hora_fin               DateTime  @db.Time
+  disponible_lunes       Boolean @default(false)
+  disponible_martes      Boolean @default(false)
+  disponible_miercoles   Boolean @default(false)
+  disponible_jueves      Boolean @default(false)
+  disponible_viernes     Boolean @default(false)
+  disponible_sabado      Boolean @default(false)
+  disponible_domingo     Boolean @default(false)
+  eliminado              Boolean @default(false)
+
+  // Relations
+  tipo_tour         TipoTour         @relation(fields: [id_tipo_tour], references: [id_tipo_tour], onUpdate: Cascade, onDelete: Restrict)
+  sede              Sede             @relation(fields: [id_sede], references: [id_sede], onUpdate: Cascade, onDelete: Restrict)
+  tours_programados TourProgramado[]
+
+  @@index([id_tipo_tour])
+  @@index([id_sede])
+  @@index([hora_inicio])
+  @@index([eliminado])
+  @@map("horario_tour")
+}
+
+model HorarioChofer {
+  id_horario_chofer      Int       @id @default(autoincrement())
+  id_usuario             Int
+  id_sede                Int
+  hora_inicio            DateTime    @db.Time
+  hora_fin               DateTime    @db.Time
+  disponible_lunes       Boolean   @default(false)
+  disponible_martes      Boolean   @default(false)
+  disponible_miercoles   Boolean   @default(false)
+  disponible_jueves      Boolean   @default(false)
+  disponible_viernes     Boolean   @default(false)
+  disponible_sabado      Boolean   @default(false)
+  disponible_domingo     Boolean   @default(false)
+  fecha_inicio           DateTime  @db.Date
+  fecha_fin              DateTime? @db.Date
+  eliminado              Boolean   @default(false)
+
+  // Relations
+  usuario Usuario @relation(fields: [id_usuario], references: [id_usuario], onUpdate: Cascade, onDelete: Restrict)
+  sede    Sede    @relation(fields: [id_sede], references: [id_sede], onUpdate: Cascade, onDelete: Restrict)
+
+  @@index([id_usuario])
+  @@index([id_sede])
+  @@index([fecha_inicio, fecha_fin])
+  @@index([eliminado])
+  @@map("horario_chofer")
+}
+
+model TourProgramado {
+  id_tour_programado Int       @id @default(autoincrement())
+  id_tipo_tour       Int
+  id_embarcacion     Int
+  id_horario         Int
+  id_sede            Int
+  id_chofer          Int?
+  fecha              DateTime  @db.Date
+  cupo_maximo        Int
+  cupo_disponible    Int
+  estado             String    @default("PROGRAMADO") @db.VarChar(20)
+  eliminado          Boolean   @default(false)
+
+  // Relations
+  tipo_tour   TipoTour    @relation(fields: [id_tipo_tour], references: [id_tipo_tour], onUpdate: Cascade, onDelete: Restrict)
+  embarcacion Embarcacion @relation(fields: [id_embarcacion], references: [id_embarcacion], onUpdate: Cascade, onDelete: Restrict)
+  horario     HorarioTour @relation(fields: [id_horario], references: [id_horario], onUpdate: Cascade, onDelete: Restrict)
+  sede        Sede        @relation(fields: [id_sede], references: [id_sede], onUpdate: Cascade, onDelete: Restrict)
+  chofer      Usuario?    @relation(fields: [id_chofer], references: [id_usuario], onUpdate: Cascade, onDelete: Restrict)
+  reservas    Reserva[]
+
+  @@unique([id_embarcacion, fecha, id_horario])
+  @@index([id_tipo_tour])
+  @@index([id_embarcacion])
+  @@index([id_horario])
+  @@index([id_sede])
+  @@index([id_chofer])
+  @@index([fecha])
+  @@index([estado])
+  @@index([eliminado])
+  @@map("tour_programado")
+}
+
+model MetodoPago {
+  id_metodo_pago Int     @id @default(autoincrement())
+  id_sede        Int
+  nombre         String  @db.VarChar(50)
+  descripcion    String? @db.VarChar(255)
+  eliminado      Boolean @default(false)
+
+  // Relations
+  sede  Sede   @relation(fields: [id_sede], references: [id_sede], onUpdate: Cascade, onDelete: Restrict)
+  pagos Pago[]
+
+  @@index([id_sede])
+  @@index([eliminado])
+  @@map("metodo_pago")
+}
+
+model CanalVenta {
+  id_canal    Int     @id @default(autoincrement())
+  id_sede     Int
+  nombre      String  @db.VarChar(50)
+  descripcion String? @db.VarChar(255)
+  eliminado   Boolean @default(false)
+
+  // Relations
+  sede     Sede      @relation(fields: [id_sede], references: [id_sede], onUpdate: Cascade, onDelete: Restrict)
+  reservas Reserva[]
+  pagos    Pago[]
+
+  @@index([id_sede])
+  @@index([eliminado])
+  @@map("canal_venta")
+}
+
+model Cliente {
+  id_cliente       Int     @id @default(autoincrement())
+  tipo_documento   String  @db.VarChar(50)
+  numero_documento String  @db.VarChar(20)
+  nombres          String  @db.VarChar(100)
+  apellidos        String  @db.VarChar(100)
+  correo           String? @db.VarChar(100)
+  contrasena       String? @db.VarChar(255)
+  eliminado        Boolean @default(false)
+
+  // Relations
+  reservas Reserva[]
+
+  @@index([tipo_documento, numero_documento])
+  @@index([nombres, apellidos])
+  @@index([correo])
+  @@index([eliminado])
+  @@map("cliente")
+}
+
+model TipoPasaje {
+  id_tipo_pasaje Int     @id @default(autoincrement())
+  id_sede        Int
+  id_tipo_tour   Int
+  nombre         String  @db.VarChar(100)
+  costo          Decimal @db.Decimal(10, 2)
+  edad           String? @db.VarChar(50)
+  es_feriado     Boolean @default(false)
+  eliminado      Boolean @default(false)
+
+  // Relations
+  sede                    Sede                   @relation(fields: [id_sede], references: [id_sede], onUpdate: Cascade, onDelete: Restrict)
+  tipo_tour               TipoTour               @relation(fields: [id_tipo_tour], references: [id_tipo_tour], onUpdate: Cascade, onDelete: Restrict)
+  pasajes_cantidad        PasajesCantidad[]
+  paquete_pasaje_detalles PaquetePasajeDetalle[]
+
+  @@index([id_sede])
+  @@index([id_tipo_tour])
+  @@index([es_feriado])
+  @@index([eliminado])
+  @@map("tipo_pasaje")
+}
+
+model PaquetePasajes {
+  id_paquete   Int     @id @default(autoincrement())
+  id_sede      Int
+  id_tipo_tour Int
+  nombre       String  @db.VarChar(100)
+  descripcion  String?
+  precio_total Decimal @db.Decimal(10, 2)
+  es_feriado   Boolean @default(false)
+  eliminado    Boolean @default(false)
+
+  // Relations
+  sede                    Sede                   @relation(fields: [id_sede], references: [id_sede], onUpdate: Cascade, onDelete: Restrict)
+  tipo_tour               TipoTour               @relation(fields: [id_tipo_tour], references: [id_tipo_tour], onUpdate: Cascade, onDelete: Restrict)
+  paquete_pasaje_detalles PaquetePasajeDetalle[]
+  reservas                Reserva[]
+
+  @@index([id_sede])
+  @@index([id_tipo_tour])
+  @@index([es_feriado])
+  @@index([eliminado])
+  @@map("paquete_pasajes")
+}
+
+model PaquetePasajeDetalle {
+  id_paquete_detalle Int     @id @default(autoincrement())
+  id_paquete         Int
+  id_tipo_pasaje     Int
+  cantidad           Int
+  eliminado          Boolean @default(false)
+
+  // Relations
+  paquete     PaquetePasajes @relation(fields: [id_paquete], references: [id_paquete], onUpdate: Cascade, onDelete: Cascade)
+  tipo_pasaje TipoPasaje     @relation(fields: [id_tipo_pasaje], references: [id_tipo_pasaje], onUpdate: Cascade, onDelete: Restrict)
+
+  @@unique([id_paquete, id_tipo_pasaje])
+  @@index([id_paquete])
+  @@index([id_tipo_pasaje])
+  @@index([eliminado])
+  @@map("paquete_pasaje_detalle")
+}
+
+model Reserva {
+  id_reserva         Int       @id @default(autoincrement())
+  id_vendedor        Int?
+  id_cliente         Int
+  id_tour_programado Int
+  id_canal           Int
+  id_sede            Int
+  id_paquete         Int?
+  fecha_reserva      DateTime  @default(now())
+  total_pagar        Decimal   @db.Decimal(10, 2)
+  notas              String?
+  estado             String    @default("RESERVADO") @db.VarChar(20)
+  eliminado          Boolean   @default(false)
+
+  // Relations
+  vendedor         Usuario?          @relation(fields: [id_vendedor], references: [id_usuario], onUpdate: Cascade, onDelete: Restrict)
+  cliente          Cliente           @relation(fields: [id_cliente], references: [id_cliente], onUpdate: Cascade, onDelete: Restrict)
+  tour_programado  TourProgramado    @relation(fields: [id_tour_programado], references: [id_tour_programado], onUpdate: Cascade, onDelete: Restrict)
+  canal            CanalVenta        @relation(fields: [id_canal], references: [id_canal], onUpdate: Cascade, onDelete: Restrict)
+  sede             Sede              @relation(fields: [id_sede], references: [id_sede], onUpdate: Cascade, onDelete: Restrict)
+  paquete          PaquetePasajes?   @relation(fields: [id_paquete], references: [id_paquete], onUpdate: Cascade, onDelete: Restrict)
+  pasajes_cantidad PasajesCantidad[]
+  pagos            Pago[]
+
+  @@index([id_vendedor])
+  @@index([id_cliente])
+  @@index([id_tour_programado])
+  @@index([id_canal])
+  @@index([id_sede])
+  @@index([id_paquete])
+  @@index([fecha_reserva])
+  @@index([estado])
+  @@index([eliminado])
+  @@map("reserva")
+}
+
+model PasajesCantidad {
+  id_pasajes_cantidad Int     @id @default(autoincrement())
+  id_reserva          Int?
+  id_tipo_pasaje      Int
+  cantidad            Int
+  eliminado           Boolean @default(false)
+
+  // Relations
+  reserva     Reserva?   @relation(fields: [id_reserva], references: [id_reserva], onUpdate: Cascade, onDelete: Cascade)
+  tipo_pasaje TipoPasaje @relation(fields: [id_tipo_pasaje], references: [id_tipo_pasaje], onUpdate: Cascade, onDelete: Restrict)
+
+  @@index([id_reserva])
+  @@index([id_tipo_pasaje])
+  @@index([eliminado])
+  @@map("pasajes_cantidad")
+}
+
+model Pago {
+  id_pago            Int       @id @default(autoincrement())
+  id_reserva         Int
+  id_metodo_pago     Int
+  id_canal           Int
+  id_sede            Int
+  monto              Decimal   @db.Decimal(10, 2)
+  fecha_pago         DateTime  @default(now())
+  estado             String    @default("PROCESADO") @db.VarChar(20)
+  numero_comprobante String?   @db.VarChar(20)
+  url_comprobante    String?
+  eliminado          Boolean   @default(false)
+
+  // Relations
+  reserva        Reserva          @relation(fields: [id_reserva], references: [id_reserva], onUpdate: Cascade, onDelete: Restrict)
+  metodo_pago    MetodoPago       @relation(fields: [id_metodo_pago], references: [id_metodo_pago], onUpdate: Cascade, onDelete: Restrict)
+  canal          CanalVenta       @relation(fields: [id_canal], references: [id_canal], onUpdate: Cascade, onDelete: Restrict)
+  sede           Sede             @relation(fields: [id_sede], references: [id_sede], onUpdate: Cascade, onDelete: Restrict)
+  devoluciones   DevolucionPago[]
+
+  @@index([id_reserva])
+  @@index([id_metodo_pago])
+  @@index([id_canal])
+  @@index([id_sede])
+  @@index([fecha_pago])
+  @@index([estado])
+  @@index([eliminado])
+  @@map("pago")
+}
+
+model DevolucionPago {
+  id_devolucion     Int      @id @default(autoincrement())
+  id_pago           Int
+  fecha_devolucion  DateTime @default(now())
+  motivo            String
+  monto_devolucion  Decimal  @db.Decimal(10, 2)
+  estado            String   @default("PENDIENTE") @db.VarChar(20)
+  observaciones     String?
+
+  // Relations
+  pago Pago @relation(fields: [id_pago], references: [id_pago], onUpdate: Cascade, onDelete: Restrict)
+
+  @@index([id_pago])
+  @@index([fecha_devolucion])
+  @@index([estado])
+  @@map("devolucion_pago")
+}

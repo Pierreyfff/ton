@@ -1,0 +1,51 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: ./apps/backend
+      dockerfile: Dockerfile
+    ports:
+      - "3001:3001"
+    environment:
+      - DATABASE_URL=postgresql://neondb_owner:npg_Uq4zD8ZyeWJH@ep-raspy-snow-a8ysqpcc-pooler.eastus2.azure.neon.tech/Database?sslmode=require
+      - JWT_SECRET=your-super-secret-jwt-key-here-change-in-production
+      - JWT_EXPIRES_IN=24h
+      - PORT=3001
+      - NODE_ENV=production
+      - CORS_ORIGIN=http://localhost:3000
+    depends_on:
+      - db-migrate
+    networks:
+      - ton-network
+
+  frontend:
+    build:
+      context: ./apps/frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_API_URL=http://backend:3001
+      - NEXT_PUBLIC_APP_NAME=TON - Tours Islas Ballestas
+    depends_on:
+      - backend
+    networks:
+      - ton-network
+
+  db-migrate:
+    build:
+      context: ./apps/backend
+      dockerfile: Dockerfile
+    command: npx prisma migrate deploy
+    environment:
+      - DATABASE_URL=postgresql://neondb_owner:npg_Uq4zD8ZyeWJH@ep-raspy-snow-a8ysqpcc-pooler.eastus2.azure.neon.tech/Database?sslmode=require
+    networks:
+      - ton-network
+
+networks:
+  ton-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
