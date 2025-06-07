@@ -10,7 +10,7 @@ export class AuthService {
   constructor(
     private prisma: PrismaService,
     private jwtService: JwtService,
-  ) {}
+  ) { }
 
   async validateUser(email: string, password: string): Promise<any> {
     // Buscar en usuarios (admin/vendedor/chofer)
@@ -24,9 +24,12 @@ export class AuthService {
       return result;
     }
 
-    // Buscar en clientes
-    const cliente = await this.prisma.cliente.findUnique({
-      where: { correo: email, eliminado: false },
+    // Buscar en clientes - CORREGIDO: usar findFirst en lugar de findUnique
+    const cliente = await this.prisma.cliente.findFirst({
+      where: {
+        correo: email,
+        eliminado: false
+      },
     });
 
     if (cliente && cliente.contrasena && await bcrypt.compare(password, cliente.contrasena)) {
@@ -43,9 +46,9 @@ export class AuthService {
       throw new UnauthorizedException('Credenciales inválidas');
     }
 
-    const payload = { 
-      sub: user.id_usuario || user.id_cliente, 
-      email: user.correo, 
+    const payload = {
+      sub: user.id_usuario || user.id_cliente,
+      email: user.correo,
       rol: user.rol,
       tipo: user.id_usuario ? 'usuario' : 'cliente'
     };
@@ -65,6 +68,27 @@ export class AuthService {
   }
 
   async registerCliente(registerDto: RegisterClienteDto) {
+    // Verificar si ya existe un cliente con el mismo correo
+    const existingCliente = await this.prisma.cliente.findFirst({
+      where: { correo: registerDto.correo },
+    });
+
+    if (existingCliente) {
+      throw new UnauthorizedException('El correo ya está registrado');
+    }
+
+    // Verificar si ya existe un cliente con el mismo documento
+    const existingDocumento = await this.prisma.cliente.findFirst({
+      where: {
+        tipo_documento: registerDto.tipo_documento,
+        numero_documento: registerDto.numero_documento
+      },
+    });
+
+    if (existingDocumento) {
+      throw new UnauthorizedException('El documento ya está registrado');
+    }
+
     const hashedPassword = await bcrypt.hash(registerDto.contrasena, 10);
 
     const cliente = await this.prisma.cliente.create({

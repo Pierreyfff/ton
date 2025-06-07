@@ -341,20 +341,41 @@ async function main() {
 
   console.log(`✅ ${toursPrograms.length} tours programados creados`);
 
-  // Crear cliente de ejemplo
+  // Crear cliente de ejemplo - CORREGIDO: usar numero_documento como unique
   const clientePassword = await bcrypt.hash('cliente123', 10);
-  const cliente = await prisma.cliente.upsert({
-    where: { correo: 'cliente@example.com' },
-    update: {},
-    create: {
-      tipo_documento: 'DNI',
+
+  // Intentar encontrar cliente por número de documento
+  const clienteExistente = await prisma.cliente.findFirst({
+    where: {
       numero_documento: '87654321',
-      nombres: 'María',
-      apellidos: 'Cliente',
-      correo: 'cliente@example.com',
-      contrasena: clientePassword,
-    },
+      tipo_documento: 'DNI'
+    }
   });
+
+  let cliente;
+  if (clienteExistente) {
+    console.log('✅ Cliente ya existe, actualizando...');
+    cliente = await prisma.cliente.update({
+      where: { id_cliente: clienteExistente.id_cliente },
+      data: {
+        nombres: 'María',
+        apellidos: 'Cliente',
+        correo: 'cliente@example.com',
+        contrasena: clientePassword,
+      },
+    });
+  } else {
+    cliente = await prisma.cliente.create({
+      data: {
+        tipo_documento: 'DNI',
+        numero_documento: '87654321',
+        nombres: 'María',
+        apellidos: 'Cliente',
+        correo: 'cliente@example.com',
+        contrasena: clientePassword,
+      },
+    });
+  }
 
   console.log('✅ Cliente de ejemplo creado');
 
