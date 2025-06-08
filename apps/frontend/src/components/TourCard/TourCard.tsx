@@ -1,6 +1,7 @@
 'use client';
 import { useRouter } from 'next/navigation';
 import { Tour, TourProgramado } from '@/types';
+import { Clock, Users, MapPin, Calendar, Star } from 'lucide-react';
 import styles from './TourCard.module.css';
 
 interface TourCardProps {
@@ -26,82 +27,131 @@ export default function TourCard({ tour, tourProgramado }: TourCardProps) {
   const formatDate = (date: string) => {
     return new Date(date).toLocaleDateString('es-ES', {
       weekday: 'long',
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
+      day: 'numeric',
+      month: 'long'
     });
   };
 
+  const getMinPrice = () => {
+    if (tour.tipos_pasaje && tour.tipos_pasaje.length > 0) {
+      return Math.min(...tour.tipos_pasaje.map(p => p.costo));
+    }
+    return 0;
+  };
+
+  const isLowAvailability = tourProgramado && tourProgramado.cupo_disponible <= 5;
+  const isSoldOut = tourProgramado && tourProgramado.cupo_disponible === 0;
+
   return (
-    <div className={`card ${styles.tourCard}`}>
-      {tour.url_imagen && (
-        <div className={styles.imageContainer}>
-          <img 
-            src={tour.url_imagen} 
-            alt={tour.nombre}
-            className={styles.image}
-          />
+    <div className={`${styles.tourCard} ${isSoldOut ? styles.soldOut : ''}`}>
+      <div className={styles.imageContainer}>
+        <img 
+          src={tour.url_imagen || 'https://images.unsplash.com/photo-1559827260-dc66d52bef19?w=400&q=80'} 
+          alt={tour.nombre}
+          className={styles.image}
+        />
+        
+        {tourProgramado && (
+          <div className={styles.badgeContainer}>
+            {isSoldOut ? (
+              <span className={`${styles.badge} ${styles.soldOutBadge}`}>
+                Agotado
+              </span>
+            ) : isLowAvailability ? (
+              <span className={`${styles.badge} ${styles.lowStockBadge}`}>
+                ¡Últimos cupos!
+              </span>
+            ) : (
+              <span className={`${styles.badge} ${styles.availableBadge}`}>
+                Disponible
+              </span>
+            )}
+          </div>
+        )}
+        
+        <div className={styles.priceTag}>
+          <span className={styles.priceLabel}>Desde</span>
+          <span className={styles.price}>S/ {getMinPrice()}</span>
         </div>
-      )}
+      </div>
       
-      <div className="card-body">
-        <h3 className={styles.title}>{tour.nombre}</h3>
+      <div className={styles.cardContent}>
+        <div className={styles.cardHeader}>
+          <h3 className={styles.title}>{tour.nombre}</h3>
+          <div className={styles.rating}>
+            <Star className={styles.starIcon} fill="currentColor" />
+            <span>4.8</span>
+          </div>
+        </div>
+
         {tour.descripcion && (
           <p className={styles.description}>{tour.descripcion}</p>
         )}
         
         <div className={styles.details}>
           <div className={styles.detail}>
-            <span className={styles.detailLabel}>Duración:</span>
-            <span>{tour.duracion_minutos} minutos</span>
+            <Clock className={styles.detailIcon} />
+            <span>{tour.duracion_minutos} min</span>
           </div>
           <div className={styles.detail}>
-            <span className={styles.detailLabel}>Capacidad:</span>
-            <span>{tour.cantidad_pasajeros} personas</span>
+            <Users className={styles.detailIcon} />
+            <span>Hasta {tour.cantidad_pasajeros} personas</span>
           </div>
           <div className={styles.detail}>
-            <span className={styles.detailLabel}>Ubicación:</span>
-            <span>{tour.sede.distrito}</span>
+            <MapPin className={styles.detailIcon} />
+            <span>{tour.sede?.distrito || 'Paracas'}</span>
           </div>
         </div>
 
         {tourProgramado && (
           <div className={styles.programmedInfo}>
-            <div className={styles.dateInfo}>
-              <strong>{formatDate(tourProgramado.fecha)}</strong>
+            <div className={styles.dateTimeInfo}>
+              <div className={styles.dateInfo}>
+                <Calendar className={styles.detailIcon} />
+                <span className={styles.dateText}>
+                  {formatDate(tourProgramado.fecha)}
+                </span>
+              </div>
+              <div className={styles.timeInfo}>
+                <Clock className={styles.detailIcon} />
+                <span>
+                  {formatTime(tourProgramado.horario.hora_inicio)} - {formatTime(tourProgramado.horario.hora_fin)}
+                </span>
+              </div>
             </div>
-            <div className={styles.timeInfo}>
-              {formatTime(tourProgramado.horario.hora_inicio)} - {formatTime(tourProgramado.horario.hora_fin)}
-            </div>
+            
             <div className={styles.availabilityInfo}>
-              <span className={styles.available}>
-                {tourProgramado.cupo_disponible} cupos disponibles
-              </span>
-            </div>
-            <div className={styles.boatInfo}>
-              Embarcación: {tourProgramado.embarcacion.nombre}
+              <div className={styles.boatInfo}>
+                <strong>Embarcación:</strong> {tourProgramado.embarcacion.nombre}
+              </div>
+              <div className={styles.capacityInfo}>
+                <Users className={styles.detailIcon} />
+                <span className={isLowAvailability ? styles.lowStock : ''}>
+                  {tourProgramado.cupo_disponible} cupos disponibles
+                </span>
+              </div>
             </div>
           </div>
         )}
 
-        <div className={styles.pricing}>
-          {tour.tipos_pasaje && tour.tipos_pasaje.length > 0 && (
-            <div className={styles.priceInfo}>
-              <span className={styles.priceLabel}>Desde:</span>
-              <span className={styles.price}>
-                S/ {Math.min(...tour.tipos_pasaje.map(p => p.costo))}
-              </span>
-            </div>
+        <div className={styles.cardActions}>
+          <button 
+            onClick={handleReservar}
+            className={`${styles.reserveButton} ${isSoldOut ? styles.disabledButton : ''}`}
+            disabled={isSoldOut}
+          >
+            {isSoldOut ? 'Agotado' : tourProgramado ? 'Reservar Ahora' : 'Ver Horarios'}
+          </button>
+          
+          {!tourProgramado && (
+            <button 
+              onClick={() => router.push(`/tours/${tour.id_tipo_tour}`)}
+              className={styles.detailsButton}
+            >
+              Ver Detalles
+            </button>
           )}
         </div>
-
-        <button 
-          onClick={handleReservar}
-          className={`btn btn-primary ${styles.reserveButton}`}
-          disabled={tourProgramado && tourProgramado.cupo_disponible === 0}
-        >
-          {tourProgramado ? 'Reservar Ahora' : 'Ver Detalles'}
-        </button>
       </div>
     </div>
   );
