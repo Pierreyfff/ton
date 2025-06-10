@@ -6,11 +6,25 @@ const prisma = new PrismaClient();
 async function main() {
   console.log('🌱 Iniciando seeding mejorado...');
 
+  // Limpiar datos existentes en orden correcto
+  await prisma.pasajesCantidad.deleteMany();
+  await prisma.reserva.deleteMany();
+  await prisma.tourProgramado.deleteMany();
+  await prisma.tipoPasaje.deleteMany();
+  await prisma.horarioTour.deleteMany();
+  await prisma.tipoTourGaleria.deleteMany();
+  await prisma.tipoTour.deleteMany();
+  await prisma.embarcacion.deleteMany();
+  await prisma.canalVenta.deleteMany();
+  await prisma.metodoPago.deleteMany();
+  await prisma.cliente.deleteMany();
+  await prisma.usuario.deleteMany();
+  await prisma.idioma.deleteMany();
+  await prisma.sede.deleteMany();
+
   // Crear sede principal
-  const sede = await prisma.sede.upsert({
-    where: { id_sede: 1 },
-    update: {},
-    create: {
+  const sede = await prisma.sede.create({
+    data: {
       nombre: 'Paracas Explorer Tours',
       direccion: 'Av. Paracas 123, El Chaco - Paracas',
       telefono: '+51 956 847 123',
@@ -19,6 +33,7 @@ async function main() {
       provincia: 'Pisco',
       pais: 'Perú',
       image_url: 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=800&q=80',
+      eliminado: false,
     },
   });
 
@@ -26,20 +41,14 @@ async function main() {
 
   // Crear idiomas
   const idiomas = await Promise.all([
-    prisma.idioma.upsert({
-      where: { nombre: 'Español' },
-      update: {},
-      create: { nombre: 'Español' },
+    prisma.idioma.create({
+      data: { nombre: 'Español', eliminado: false },
     }),
-    prisma.idioma.upsert({
-      where: { nombre: 'Inglés' },
-      update: {},
-      create: { nombre: 'Inglés' },
+    prisma.idioma.create({
+      data: { nombre: 'Inglés', eliminado: false },
     }),
-    prisma.idioma.upsert({
-      where: { nombre: 'Francés' },
-      update: {},
-      create: { nombre: 'Francés' },
+    prisma.idioma.create({
+      data: { nombre: 'Francés', eliminado: false },
     }),
   ]);
 
@@ -50,10 +59,8 @@ async function main() {
   const vendedorPassword = await bcrypt.hash('vendedor123', 10);
   const choferPassword = await bcrypt.hash('chofer123', 10);
 
-  const admin = await prisma.usuario.upsert({
-    where: { correo: 'admin@paracasexplorer.com' },
-    update: {},
-    create: {
+  const admin = await prisma.usuario.create({
+    data: {
       id_sede: sede.id_sede,
       nombres: 'Roberto',
       apellidos: 'Administrador',
@@ -64,14 +71,13 @@ async function main() {
       tipo_de_documento: 'DNI',
       numero_documento: '12345678',
       contrasena: adminPassword,
+      eliminado: false,
     },
   });
 
   const vendedores = await Promise.all([
-    prisma.usuario.upsert({
-      where: { correo: 'carlos@paracasexplorer.com' },
-      update: {},
-      create: {
+    prisma.usuario.create({
+      data: {
         id_sede: sede.id_sede,
         nombres: 'Carlos',
         apellidos: 'Mendoza',
@@ -82,12 +88,11 @@ async function main() {
         tipo_de_documento: 'DNI',
         numero_documento: '12345679',
         contrasena: vendedorPassword,
+        eliminado: false,
       },
     }),
-    prisma.usuario.upsert({
-      where: { correo: 'sofia@paracasexplorer.com' },
-      update: {},
-      create: {
+    prisma.usuario.create({
+      data: {
         id_sede: sede.id_sede,
         nombres: 'Sofia',
         apellidos: 'Rodriguez',
@@ -98,15 +103,14 @@ async function main() {
         tipo_de_documento: 'DNI',
         numero_documento: '12345680',
         contrasena: vendedorPassword,
+        eliminado: false,
       },
     }),
   ]);
 
   const choferes = await Promise.all([
-    prisma.usuario.upsert({
-      where: { correo: 'miguel@paracasexplorer.com' },
-      update: {},
-      create: {
+    prisma.usuario.create({
+      data: {
         id_sede: sede.id_sede,
         nombres: 'Miguel',
         apellidos: 'Vargas',
@@ -117,12 +121,11 @@ async function main() {
         tipo_de_documento: 'DNI',
         numero_documento: '12345681',
         contrasena: choferPassword,
+        eliminado: false,
       },
     }),
-    prisma.usuario.upsert({
-      where: { correo: 'jose@paracasexplorer.com' },
-      update: {},
-      create: {
+    prisma.usuario.create({
+      data: {
         id_sede: sede.id_sede,
         nombres: 'José',
         apellidos: 'Flores',
@@ -133,6 +136,7 @@ async function main() {
         tipo_de_documento: 'DNI',
         numero_documento: '12345682',
         contrasena: choferPassword,
+        eliminado: false,
       },
     }),
   ]);
@@ -141,37 +145,34 @@ async function main() {
 
   // Crear embarcaciones modernas
   const embarcaciones = await Promise.all([
-    prisma.embarcacion.upsert({
-      where: { id_embarcacion: 1 },
-      update: {},
-      create: {
+    prisma.embarcacion.create({
+      data: {
         id_sede: sede.id_sede,
         nombre: 'Paracas Explorer I',
         capacidad: 35,
         descripcion: 'Embarcación moderna con techo retráctil, asientos acolchados y sistema de audio bilingüe',
         estado: 'DISPONIBLE',
+        eliminado: false,
       },
     }),
-    prisma.embarcacion.upsert({
-      where: { id_embarcacion: 2 },
-      update: {},
-      create: {
+    prisma.embarcacion.create({
+      data: {
         id_sede: sede.id_sede,
         nombre: 'Paracas Explorer II',
         capacidad: 30,
         descripcion: 'Lancha rápida con motores nuevos, chalecos salvavidas y guías certificados',
         estado: 'DISPONIBLE',
+        eliminado: false,
       },
     }),
-    prisma.embarcacion.upsert({
-      where: { id_embarcacion: 3 },
-      update: {},
-      create: {
+    prisma.embarcacion.create({
+      data: {
         id_sede: sede.id_sede,
         nombre: 'Ballestas Premium',
         capacidad: 25,
         descripcion: 'Embarcación VIP con servicio personalizado y refrigerios incluidos',
         estado: 'DISPONIBLE',
+        eliminado: false,
       },
     }),
   ]);
@@ -180,40 +181,37 @@ async function main() {
 
   // Crear tipos de tour diversos
   const tiposTour = await Promise.all([
-    prisma.tipoTour.upsert({
-      where: { id_tipo_tour: 1 },
-      update: {},
-      create: {
+    prisma.tipoTour.create({
+      data: {
         id_sede: sede.id_sede,
         nombre: 'Tour Clásico Islas Ballestas',
         descripcion: 'Recorrido tradicional de 2 horas por las Islas Ballestas. Observa lobos marinos, pingüinos de Humboldt, pelícanos y más fauna marina en su hábitat natural.',
         duracion_minutos: 120,
         cantidad_pasajeros: 35,
         url_imagen: 'https://images.unsplash.com/photo-1559827260-dc66d52bef19?w=800&q=80',
+        eliminado: false,
       },
     }),
-    prisma.tipoTour.upsert({
-      where: { id_tipo_tour: 2 },
-      update: {},
-      create: {
+    prisma.tipoTour.create({
+      data: {
         id_sede: sede.id_sede,
         nombre: 'Tour Premium Ballestas',
         descripcion: 'Experiencia exclusiva con embarcación VIP, guía especializado bilingüe, refrigerios gourmet y tiempo extendido para fotografía profesional.',
         duracion_minutos: 150,
         cantidad_pasajeros: 25,
         url_imagen: 'https://images.unsplash.com/photo-1583212292454-1fe6229603b7?w=800&q=80',
+        eliminado: false,
       },
     }),
-    prisma.tipoTour.upsert({
-      where: { id_tipo_tour: 3 },
-      update: {},
-      create: {
+    prisma.tipoTour.create({
+      data: {
         id_sede: sede.id_sede,
         nombre: 'Tour Familiar Especial',
         descripcion: 'Tour diseñado especialmente para familias con niños. Incluye actividades educativas, material didáctico y descuentos especiales.',
         duracion_minutos: 105,
         cantidad_pasajeros: 30,
         url_imagen: 'https://images.unsplash.com/photo-1557804506-669a67965ba0?w=800&q=80',
+        eliminado: false,
       },
     }),
   ]);
@@ -228,6 +226,7 @@ async function main() {
         id_tipo_tour: tiposTour[0].id_tipo_tour,
         imagen_url: 'https://images.unsplash.com/photo-1559827260-dc66d52bef19?w=800&q=80',
         descripcion: 'Vista panorámica de las Islas Ballestas',
+        eliminado: false,
       },
     }),
     prisma.tipoTourGaleria.create({
@@ -235,6 +234,7 @@ async function main() {
         id_tipo_tour: tiposTour[0].id_tipo_tour,
         imagen_url: 'https://images.unsplash.com/photo-1583212292454-1fe6229603b7?w=800&q=80',
         descripcion: 'Lobos marinos descansando en las rocas',
+        eliminado: false,
       },
     }),
     // Galería Tour Premium
@@ -243,6 +243,7 @@ async function main() {
         id_tipo_tour: tiposTour[1].id_tipo_tour,
         imagen_url: 'https://images.unsplash.com/photo-1557804506-669a67965ba0?w=800&q=80',
         descripcion: 'Embarcación VIP con servicio exclusivo',
+        eliminado: false,
       },
     }),
     // Galería Tour Familiar
@@ -251,6 +252,7 @@ async function main() {
         id_tipo_tour: tiposTour[2].id_tipo_tour,
         imagen_url: 'https://images.unsplash.com/photo-1594736797933-d0800ba0d14d?w=800&q=80',
         descripcion: 'Familia disfrutando del tour educativo',
+        eliminado: false,
       },
     }),
   ]);
@@ -262,8 +264,8 @@ async function main() {
       data: {
         id_tipo_tour: tiposTour[0].id_tipo_tour,
         id_sede: sede.id_sede,
-        hora_inicio: '07:30:00',
-        hora_fin: '09:30:00',
+        hora_inicio: new Date("2025-06-09T07:30:00Z"),
+        hora_fin: new Date("2025-06-09T09:30:00Z"),
         disponible_lunes: true,
         disponible_martes: true,
         disponible_miercoles: true,
@@ -271,14 +273,15 @@ async function main() {
         disponible_viernes: true,
         disponible_sabado: true,
         disponible_domingo: true,
+        eliminado: false,
       },
     }),
     prisma.horarioTour.create({
       data: {
         id_tipo_tour: tiposTour[0].id_tipo_tour,
         id_sede: sede.id_sede,
-        hora_inicio: '10:00:00',
-        hora_fin: '12:00:00',
+        hora_inicio: new Date("2025-06-09T10:00:00Z"),
+        hora_fin: new Date("2025-06-09T12:00:00Z"),
         disponible_lunes: true,
         disponible_martes: true,
         disponible_miercoles: true,
@@ -286,6 +289,7 @@ async function main() {
         disponible_viernes: true,
         disponible_sabado: true,
         disponible_domingo: true,
+        eliminado: false,
       },
     }),
     // Horarios Tour Premium
@@ -293,8 +297,8 @@ async function main() {
       data: {
         id_tipo_tour: tiposTour[1].id_tipo_tour,
         id_sede: sede.id_sede,
-        hora_inicio: '08:00:00',
-        hora_fin: '10:30:00',
+        hora_inicio: new Date("2025-06-09T08:00:00Z"),
+        hora_fin: new Date("2025-06-09T10:30:00Z"),
         disponible_lunes: true,
         disponible_martes: true,
         disponible_miercoles: true,
@@ -302,6 +306,7 @@ async function main() {
         disponible_viernes: true,
         disponible_sabado: true,
         disponible_domingo: true,
+        eliminado: false,
       },
     }),
     // Horarios Tour Familiar
@@ -309,8 +314,8 @@ async function main() {
       data: {
         id_tipo_tour: tiposTour[2].id_tipo_tour,
         id_sede: sede.id_sede,
-        hora_inicio: '09:00:00',
-        hora_fin: '10:45:00',
+        hora_inicio: new Date("2025-06-09T08:00:00Z"),
+        hora_fin: new Date("2025-06-09T10:30:00Z"),
         disponible_lunes: false,
         disponible_martes: false,
         disponible_miercoles: true,
@@ -318,6 +323,7 @@ async function main() {
         disponible_viernes: true,
         disponible_sabado: true,
         disponible_domingo: true,
+        eliminado: false,
       },
     }),
   ]);
@@ -335,6 +341,7 @@ async function main() {
         costo: 35.00,
         edad: '12 años en adelante',
         es_feriado: false,
+        eliminado: false,
       },
     }),
     prisma.tipoPasaje.create({
@@ -345,6 +352,7 @@ async function main() {
         costo: 45.00,
         edad: '12 años en adelante',
         es_feriado: false,
+        eliminado: false,
       },
     }),
     prisma.tipoPasaje.create({
@@ -355,6 +363,7 @@ async function main() {
         costo: 20.00,
         edad: '3 a 11 años',
         es_feriado: false,
+        eliminado: false,
       },
     }),
     prisma.tipoPasaje.create({
@@ -365,6 +374,7 @@ async function main() {
         costo: 25.00,
         edad: '3 a 11 años',
         es_feriado: false,
+        eliminado: false,
       },
     }),
     // Pasajes Tour Premium
@@ -376,6 +386,7 @@ async function main() {
         costo: 80.00,
         edad: '12 años en adelante',
         es_feriado: false,
+        eliminado: false,
       },
     }),
     prisma.tipoPasaje.create({
@@ -386,6 +397,7 @@ async function main() {
         costo: 60.00,
         edad: '3 a 11 años',
         es_feriado: false,
+        eliminado: false,
       },
     }),
     // Pasajes Tour Familiar
@@ -397,6 +409,7 @@ async function main() {
         costo: 100.00,
         edad: 'Familia completa',
         es_feriado: false,
+        eliminado: false,
       },
     }),
   ]);
@@ -405,31 +418,28 @@ async function main() {
 
   // Crear métodos de pago modernos
   const metodosPago = await Promise.all([
-    prisma.metodoPago.upsert({
-      where: { id_metodo_pago: 1 },
-      update: {},
-      create: {
+    prisma.metodoPago.create({
+      data: {
         id_sede: sede.id_sede,
         nombre: 'Efectivo',
         descripcion: 'Pago en efectivo en soles peruanos',
+        eliminado: false,
       },
     }),
-    prisma.metodoPago.upsert({
-      where: { id_metodo_pago: 2 },
-      update: {},
-      create: {
+    prisma.metodoPago.create({
+      data: {
         id_sede: sede.id_sede,
         nombre: 'Tarjeta de Crédito/Débito',
         descripcion: 'Visa, MasterCard, American Express',
+        eliminado: false,
       },
     }),
-    prisma.metodoPago.upsert({
-      where: { id_metodo_pago: 3 },
-      update: {},
-      create: {
+    prisma.metodoPago.create({
+      data: {
         id_sede: sede.id_sede,
         nombre: 'Transferencia Bancaria',
         descripcion: 'Transferencia a cuenta BCP o Interbank',
+        eliminado: false,
       },
     }),
     prisma.metodoPago.create({
@@ -437,6 +447,7 @@ async function main() {
         id_sede: sede.id_sede,
         nombre: 'Yape/Plin',
         descripcion: 'Pagos móviles digitales',
+        eliminado: false,
       },
     }),
     prisma.metodoPago.create({
@@ -444,6 +455,7 @@ async function main() {
         id_sede: sede.id_sede,
         nombre: 'PayPal',
         descripcion: 'Pagos internacionales con PayPal',
+        eliminado: false,
       },
     }),
   ]);
@@ -452,31 +464,28 @@ async function main() {
 
   // Crear canales de venta
   const canalesVenta = await Promise.all([
-    prisma.canalVenta.upsert({
-      where: { id_canal: 1 },
-      update: {},
-      create: {
+    prisma.canalVenta.create({
+      data: {
         id_sede: sede.id_sede,
         nombre: 'Sitio Web',
         descripcion: 'Reservas online a través de www.paracasexplorer.com',
+        eliminado: false,
       },
     }),
-    prisma.canalVenta.upsert({
-      where: { id_canal: 2 },
-      update: {},
-      create: {
+    prisma.canalVenta.create({
+      data: {
         id_sede: sede.id_sede,
         nombre: 'Oficina Paracas',
         descripcion: 'Ventas directas en nuestra oficina de Paracas',
+        eliminado: false,
       },
     }),
-    prisma.canalVenta.upsert({
-      where: { id_canal: 3 },
-      update: {},
-      create: {
+    prisma.canalVenta.create({
+      data: {
         id_sede: sede.id_sede,
         nombre: 'WhatsApp',
         descripcion: 'Reservas vía WhatsApp +51 956 847 123',
+        eliminado: false,
       },
     }),
     prisma.canalVenta.create({
@@ -484,17 +493,18 @@ async function main() {
         id_sede: sede.id_sede,
         nombre: 'Agencias de Turismo',
         descripcion: 'Venta a través de agencias asociadas',
+        eliminado: false,
       },
     }),
   ]);
 
   console.log('✅ Canales de venta creados');
 
-  // Crear tours programados para los próximos 14 días
+  // Crear tours programados para los próximos 30 días
   const today = new Date();
   const toursPrograms = [];
 
-  for (let i = 0; i < 14; i++) {
+  for (let i = 0; i < 30; i++) {
     const fecha = new Date(today);
     fecha.setDate(today.getDate() + i);
 
@@ -518,14 +528,14 @@ async function main() {
               id_chofer: chofer.id_usuario,
               fecha: fecha,
               cupo_maximo: embarcacion.capacidad,
-              cupo_disponible: Math.floor(embarcacion.capacidad * (0.7 + Math.random() * 0.3)), // Entre 70% y 100% disponible
+              cupo_disponible: Math.floor(embarcacion.capacidad * (0.7 + Math.random() * 0.3)),
               estado: 'PROGRAMADO',
+              eliminado: false,
             },
           });
 
           toursPrograms.push(tourProgramado);
         } catch (error) {
-          // Ignorar errores de duplicados
           console.log(`Tour ya existe para ${fecha.toDateString()}`);
         }
       }
@@ -538,16 +548,15 @@ async function main() {
   const clientePassword = await bcrypt.hash('cliente123', 10);
 
   const clientes = await Promise.all([
-    prisma.cliente.upsert({
-      where: { correo: 'maria.garcia@email.com' },
-      update: {},
-      create: {
+    prisma.cliente.create({
+      data: {
         tipo_documento: 'DNI',
         numero_documento: '87654321',
         nombres: 'María Elena',
         apellidos: 'García López',
         correo: 'maria.garcia@email.com',
         contrasena: clientePassword,
+        eliminado: false,
       },
     }),
     prisma.cliente.create({
@@ -558,6 +567,7 @@ async function main() {
         apellidos: 'Smith',
         correo: 'john.smith@email.com',
         contrasena: clientePassword,
+        eliminado: false,
       },
     }),
     prisma.cliente.create({
@@ -568,6 +578,7 @@ async function main() {
         apellidos: 'Mendoza Ruiz',
         correo: 'carlos.mendoza@email.com',
         contrasena: clientePassword,
+        eliminado: false,
       },
     }),
   ]);
@@ -591,9 +602,10 @@ async function main() {
           id_tour_programado: tourAleatorio.id_tour_programado,
           id_canal: canalAleatorio.id_canal,
           id_sede: sede.id_sede,
-          total_pagar: 70.00 + Math.random() * 100, // Entre S/70 y S/170
+          total_pagar: 70.00 + Math.random() * 100,
           notas: `Reserva de ejemplo #${i + 1}`,
           estado: ['RESERVADO', 'CONFIRMADO', 'COMPLETADO'][Math.floor(Math.random() * 3)],
+          eliminado: false,
         },
       });
 
@@ -601,8 +613,9 @@ async function main() {
       await prisma.pasajesCantidad.create({
         data: {
           id_reserva: reserva.id_reserva,
-          id_tipo_pasaje: tiposPasaje[Math.floor(Math.random() * 4)].id_tipo_pasaje, // Solo los primeros 4 (tour clásico)
-          cantidad: 1 + Math.floor(Math.random() * 3), // 1 a 3 pasajes
+          id_tipo_pasaje: tiposPasaje[Math.floor(Math.random() * 4)].id_tipo_pasaje,
+          cantidad: 1 + Math.floor(Math.random() * 3),
+          eliminado: false,
         },
       });
 
